@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Server {
-
+private final int LIMIT=3;
 private     Logger logger;
     private ArrayList<ClientService> clients;
 
@@ -19,8 +19,8 @@ private     Logger logger;
         this.logger.getThread().start();
         this.port = port;
         clients = new ArrayList<>();
-        System.out.printf("Cервер успешно стартовал на порту %s\n", port);
-        logger.addLogMessage(new Date() + "сервер стартовал");
+
+        logger.addLogMessage(new Date() + " сервер стартовал");
 
         ServerSocket serverSocket = null;
         try {
@@ -32,8 +32,14 @@ private     Logger logger;
         while (true) {
             try {
                 socket = serverSocket.accept();
-                clients.add(new ClientService(socket,this));
-                new Thread(clients.get(clients.size() - 1), String.format("Клиент %s", clients.size() - 1)).start();
+                if(clients.size()<3) {
+                    clients.add(new ClientService(socket, this));
+                    new Thread(clients.get(clients.size() - 1), String.format("Клиент %s", clients.size() - 1)).start();
+                }
+                else {socket.close();
+                    System.out.println("Cоединение невозможно");
+                    logger.addLogMessage("Подключение нового пользователя невозможно.Достигута макс нагрузка");}
+
 
             } catch (IOException e) {
                 throw new RuntimeException(e);

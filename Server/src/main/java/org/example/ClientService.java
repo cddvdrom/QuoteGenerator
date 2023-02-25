@@ -7,29 +7,54 @@ import java.net.Socket;
 import java.util.Date;
 
 public class ClientService implements Runnable{
+    private final int LIMIT=2;
+    private int counter;
+    private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
 private Server server;
     @Override
     public void run() {
+
         String message;
         while (true){
             try {
                 message=in.readUTF();
+                if(logMessage(message)){
+                    System.out.println(message);
+                    writeLogMessage(" Цитата "+message.substring(12)+" получена клиентом с IP  ");
+                    counter++;
+                    if(counter>LIMIT){
+                        writeLogMessage(" превышено количество бесплатных цитат клиента ");
+                        break;
+                    }
+                }
                 if(getCitate(message)){
                     ApiCitateCreator apiCitateCreator=new ApiCitateCreator();
                     out.writeUTF("@citate "+ apiCitateCreator.getCitate());
                 }
             } catch (IOException e) {
-                server.getLogger().addLogMessage(String.valueOf(new Date()));
+                writeLogMessage(" потеряно соединение с клиентом ");
                 throw new RuntimeException("Cоединение с клиентом потеряно");
             }
+
         }
+        try {
+            out.writeUTF("@break");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
 
     }
     public ClientService(Socket socket,Server server){
-this.server=server;
-        server.getLogger().addLogMessage(new Date() +"Клиент подключился "+socket.getInetAddress().getHostName());
+
+        server.getLogger().addLogMessage(dataOfClient(" подключился клиент "));
         try {
             in=new DataInputStream(socket.getInputStream());
         } catch (IOException e) {
@@ -47,9 +72,30 @@ this.server=server;
     public boolean getCitate(String message){
         return message.startsWith("@getCitate");
     }
+    public boolean logMessage(String message){
+        return message.startsWith("@logMessage");
+    }
     public boolean register(String message){
         return message.startsWith("@register");
     }
+public  String dataOfClient(String message){
+        return new Date()+message+" ip "+socket.getInetAddress().getHostAddress();
+}
+public void writeLogMessage (String message){
+    server.getLogger().addLogMessage(dataOfClient(message));
+}
+   public void disconnect(){
+       try {
+           in.close();
+       } catch (IOException e) {
+           throw new RuntimeException(e);
+       }
+       try {
+           out.close();
+       } catch (IOException e) {
+           throw new RuntimeException(e);
+       }
 
+   }
 
 }
