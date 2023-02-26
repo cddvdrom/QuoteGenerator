@@ -21,6 +21,29 @@ public class ClientService implements Runnable {
         while (true) {
             try {
                 message = in.readUTF();
+
+                if (message.startsWith("@regLogin")) {
+                    String[] logPass = message.split(" ");
+                    String login = logPass[1];
+                    String pass = logPass[2];
+                    server.getUsers().put(login,pass);
+
+                }
+
+
+                if (message.startsWith("@checkLogin")) {
+                    String[] logPass = message.split(" ");
+                    String login = logPass[1];
+                    String pass = logPass[2];
+                    if (server.getUsers().containsKey(login) & server.getUsers().get(login).equals(pass)) {
+                        out.writeUTF("@login_ok");
+
+                    } else {
+                        out.writeUTF("@login_bad");
+                    }
+                }
+
+
                 if (logMessage(message)) {
                     System.out.println(message);
                     writeLogMessage(" Цитата " + message.substring(12) + " получена клиентом с IP  ");
@@ -42,12 +65,14 @@ public class ClientService implements Runnable {
         }
         try {
             out.writeUTF("@break");
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             throw new RuntimeException(e);
         }
         try {
             Thread.sleep(1000);
-        } catch (InterruptedException e) {
+        } catch (
+                InterruptedException e) {
             throw new RuntimeException(e);
         }
 

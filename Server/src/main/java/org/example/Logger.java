@@ -36,14 +36,14 @@ public class Logger implements Runnable {
 
     @Override
     public void run() {
-while (true) {
-    try {
-        String message = logMessages.take();
-        writeLog(message);
-    } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-    }
-}
+        while (true) {
+            try {
+                String message = logMessages.take();
+                writeLog(message);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public void addLogMessage(String message) {
