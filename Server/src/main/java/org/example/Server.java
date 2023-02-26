@@ -18,37 +18,34 @@ private     Logger logger;
         this.logger = Logger.getLogger();
         this.logger.getThread().start();
         this.port = port;
-        clients = new ArrayList<>();
+        this.clients = new ArrayList<>();
 
         logger.addLogMessage(new Date() + " сервер стартовал");
 
         ServerSocket serverSocket = null;
         try {
-            serverSocket = new ServerSocket(port);
+            serverSocket = new ServerSocket(this.port,LIMIT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         Socket socket;
-        while (true) {
-            try {
-                socket = serverSocket.accept();
-                if(clients.size()<3) {
-                    clients.add(new ClientService(socket, this));
-                    new Thread(clients.get(clients.size() - 1), String.format("Клиент %s", clients.size() - 1)).start();
-                }
-                else {socket.close();
-                    System.out.println("Cоединение невозможно");
-                    logger.addLogMessage("Подключение нового пользователя невозможно.Достигута макс нагрузка");}
+while (true) {
+    try {
+        socket = serverSocket.accept();
+        this.clients.add(new ClientService(socket, this));
+        new Thread(this.clients.get(this.clients.size() - 1), String.format("Клиент %s", this.clients.size() - 1)).start();
 
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
+    } catch (IOException e) {
+        throw new RuntimeException(e);
     }
+}
+        }
 
     public Logger getLogger() {
         return logger;
+    }
+
+    public ArrayList<ClientService> getClients() {
+        return clients;
     }
 }
