@@ -1,7 +1,9 @@
 package org.example;
 
-public class Main {
+public class ServerApplication {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        new Server(7777);
+
     }
+
 }
